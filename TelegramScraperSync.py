@@ -3,12 +3,12 @@ import time
 from telethon import TelegramClient, events
 import TelegramReport
 import PriceChecker
+import RugChecker
 from dotenv import load_dotenv
 import os
 import TelegramLogger
 import random
 import string
-
 
 load_dotenv()
 
@@ -23,6 +23,7 @@ def generate_session_name(length=5):
     return session_name
 
 client = TelegramClient(generate_session_name(), api_id, api_hash)
+rug_checker = RugChecker.RugChecker()
 checker = PriceChecker.PriceChecker()
 initial_investment = checker.fetch_price("So11111111111111111111111111111111111111112") * float(os.getenv("SOLANA_AMOUNT"))
 
@@ -138,15 +139,10 @@ async def handler(event):
         else:
             print("Currently processing a token. Ignoring this message.")
 
-
-
 async def main():
-
     print("Listening for new messages...")
     logger.sendMessageLog("Listening for new messages...")
     await client.start()
     await client.run_until_disconnected()
-
-    
 
 client.loop.run_until_complete(main())
