@@ -146,6 +146,24 @@ async def handler(event):
         logger.sendMessageLog(f"Message Dropped time diff {time_diff}")
 
 
+@client.on(events.NewMessage(chats='signalsolanaby4am'))
+async def handler(event):
+    global is_processing
+    message_text = event.message.message
+    message_time = event.message.date 
+    current_time = datetime.now()
+    time_diff = current_time.timestamp() - message_time.timestamp()
+    
+    logger.sendMessageLog(f"New Message Received ${message_time}")
+
+    if time_diff <= 30:
+        selected_token = extract_address(message_text)
+        if selected_token:
+            print(f"New token detected: {selected_token}")
+            process_token(selected_token)
+    else:
+        logger.sendMessageLog(f"Message Dropped time diff {time_diff}")
+        
 @app.route('/', methods=['GET'])
 def home():
     return jsonify({"status": "Hello"})
@@ -156,23 +174,6 @@ def start_bot():
     asyncio.set_event_loop(loop)
 
     async def bot_listener():
-        @client.on(events.NewMessage(chats='signalsolanaby4am'))
-        async def handler(event):
-            message_text = event.message.message
-            message_time = event.message.date 
-            current_time = datetime.now()
-            time_diff = current_time.timestamp() - message_time.timestamp()
-            
-            logger.sendMessageLog(f"New Message Received ${message_time}")
-
-            if time_diff <= 30:
-                selected_token = extract_address(message_text)
-                if selected_token:
-                    print(f"New token detected: {selected_token}")
-                    process_token(selected_token)
-            else:
-                logger.sendMessageLog(f"Message Dropped time diff {time_diff}")
-
         await client.start()
         logger.sendMessageLog("Listening for new messages...")
         await client.run_until_disconnected()
