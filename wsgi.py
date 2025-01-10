@@ -14,6 +14,8 @@ api_id = '26844985'
 api_hash = 'db202faf086c8e0ad4f155b6e4c2eaf5'
 report_sender = TelegramReport.TelegramReport()
 logger = TelegramLogger.TelegramLogger()
+phone_number = "+213 0562396664"
+verification_code = "65123"
 
 session_path = '/tmp/session_name'
 os.makedirs(os.path.dirname(session_path), exist_ok=True)
@@ -140,8 +142,15 @@ async def handler(event):
 
 
 async def main():
+    await client.start(phone_number)
+
+    if verification_code:
+        await client.sign_in(phone_number, code=verification_code)
+
+    print("Authenticated successfully!")
     logger.sendMessageLog("Listening for new messages...")
     await client.start()
     await client.run_until_disconnected()
+
 
 client.loop.run_until_complete(main())
