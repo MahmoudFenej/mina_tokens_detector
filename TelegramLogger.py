@@ -4,7 +4,7 @@ import os
 from datetime import datetime
 
 load_dotenv()
-BOT_TOKEN = "7774396796:AAH-oR7_Wobo4GNKvtw3rFjlPUwel3M6sgM"
+BOT_TOKEN = "7640107342:AAFHfluUgH8VeQ5GdhEvTkS-xlvVhAxYWW8"
 
 class TelegramLogger:
     def __init__(self):

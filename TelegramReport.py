@@ -5,7 +5,7 @@ from datetime import datetime
 
 load_dotenv()
 
-BOT_TOKEN = "7750444311:AAFyeiTLM-ZFZ0XfyoADVc7W8zOBZKKtO84"
+BOT_TOKEN = "7589976797:AAHxijurzhDerdxId8lnUGxgLIJ28lgbhKY"
 
 class TelegramReport:
     def __init__(self):
@@ -112,7 +112,6 @@ class TelegramReport:
                 print(f"Failed to send time report to chat ID {chat_id}. Error: {response.text}")
 
 if __name__ == "__main__":
-    BOT_TOKEN = "7750444311:AAFyeiTLM-ZFZ0XfyoADVc7W8zOBZKKtO84"
     
     processed_symbols = [
         {"profit": 10, "tokenSymbol": "BTC"},
@@ -125,6 +124,5 @@ if __name__ == "__main__":
     total_time_minutes = 12.5
     address = "0x1234567890abcdef"
 
-    report_sender = TelegramReport(BOT_TOKEN)
+    report_sender = TelegramReport()
     report_sender.sendReport(processed_symbols, total_time_minutes, 30)
-    report_sender.sendMessageReport(address)

@@ -3,33 +3,28 @@ import time
 from telethon import TelegramClient, events
 import TelegramReport
 import PriceChecker
-import RugChecker
 from dotenv import load_dotenv
 import os
 import TelegramLogger
-import random
-import string
+from datetime import datetime
 
 load_dotenv()
 
-api_id = '27753991'
-api_hash = 'bd527f9b3f1d56c77675f8b8e441c15f'
+api_id = '26844985'
+api_hash = 'db202faf086c8e0ad4f155b6e4c2eaf5'
 report_sender = TelegramReport.TelegramReport()
 logger = TelegramLogger.TelegramLogger()
 
-def generate_session_name(length=5):
-    chars = string.ascii_letters + string.digits
-    session_name = ''.join(random.choices(chars, k=length))
-    return session_name
-
-client = TelegramClient(generate_session_name(), api_id, api_hash)
-rug_checker = RugChecker.RugChecker()
+client = TelegramClient('session_name', api_id, api_hash, proxy=None)
 checker = PriceChecker.PriceChecker()
-initial_investment = checker.fetch_price("So11111111111111111111111111111111111111112") * float(os.getenv("SOLANA_AMOUNT"))
+
+print(os.getenv("SOLANA_AMOUNT"))
+
+
+initial_investment =  float(os.getenv("SOLANA_AMOUNT"))
 
 fee_per_transaction = 0.4
 
-is_processing = False
 total_profit = 0.0
 
 ADDRESS_REGEX = re.compile(r'\b[A-HJ-NP-Za-km-z1-9]{43,44}\b')
@@ -41,7 +36,7 @@ def extract_address(message_text):
     return None
 
 def process_token(selected_token):
-    global is_processing, total_profit
+    global total_profit
     try:
         processed_symbols = []
         total_time_minutes = 0
@@ -100,6 +95,8 @@ def process_token(selected_token):
             last_price = current_price
 
         logger.sendMessageLog(f"{selected_token} swapped successfully")
+        # buyerManager = BuyerManager.BuyerManager(selected_token)
+        # buyerManager.perform_swap()
 
         start_time = time.time()
         profit = checker.track_price_change(selected_token, initial_investment)
@@ -115,32 +112,31 @@ def process_token(selected_token):
         print(f"Profit for {selected_token}: {profit}")
 
         report_sender.sendReport(processed_symbols, total_time_minutes, initial_investment)
-        report_sender.sendReport(f"Total profit on exit: {total_profit}")
 
 
     except Exception as e:
         print(f"Error processing token {selected_token}: {e}")
-    finally:
-        is_processing = False
 
 @client.on(events.NewMessage(chats='signalsolanaby4am'))
 async def handler(event):
     global is_processing
     message_text = event.message.message
-    print(message_text)
+    message_time = event.message.date 
+    current_time = datetime.now()
+    time_diff = current_time.timestamp() - message_time.timestamp()
+    
+    logger.sendMessageLog(f"New Message Received ${message_time}")
 
-    selected_token = extract_address(message_text)
-
-    if selected_token:
-        if not is_processing:
-            is_processing = True
+    if time_diff <= 30:
+        selected_token = extract_address(message_text)
+        if selected_token:
             print(f"New token detected: {selected_token}")
             process_token(selected_token)
-        else:
-            print("Currently processing a token. Ignoring this message.")
+    else:
+        logger.sendMessageLog(f"Message Dropped time diff {time_diff}")
+
 
 async def main():
-    print("Listening for new messages...")
     logger.sendMessageLog("Listening for new messages...")
     await client.start()
     await client.run_until_disconnected()
