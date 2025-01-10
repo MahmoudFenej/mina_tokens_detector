@@ -149,7 +149,7 @@ async def main():
 
     print("Authenticated successfully!")
     logger.sendMessageLog("Listening for new messages...")
-    await client.start()
+    
     await client.run_until_disconnected()
 
 
