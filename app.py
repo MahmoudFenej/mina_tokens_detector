@@ -7,9 +7,7 @@ from dotenv import load_dotenv
 import os
 import TelegramLogger
 from datetime import datetime
-from flask import Flask, request, jsonify
-
-app = Flask(__name__)
+import BuyerManager
 
 load_dotenv()
 
@@ -98,8 +96,8 @@ def process_token(selected_token):
             last_price = current_price
 
         logger.sendMessageLog(f"{selected_token} swapped successfully")
-        # buyerManager = BuyerManager.BuyerManager(selected_token)
-        # buyerManager.perform_swap()
+        buyerManager = BuyerManager.BuyerManager(selected_token)
+        buyerManager.perform_swap()
 
         start_time = time.time()
         profit = checker.track_price_change(selected_token, initial_investment)
@@ -143,6 +141,5 @@ async def main():
     logger.sendMessageLog("Listening for new messages...")
     await client.start()
     await client.run_until_disconnected()
-    app.run(debug=True, host="0.0.0.0", port=5000)
 
 client.loop.run_until_complete(main())
