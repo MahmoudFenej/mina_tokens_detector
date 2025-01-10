@@ -1,13 +1,17 @@
-import re
-import time
+from flask import Flask, request, jsonify
 from telethon import TelegramClient, events
+import asyncio
+import re
+import os
+import time
+from datetime import datetime
 import TelegramReport
 import PriceChecker
-from dotenv import load_dotenv
-import os
 import TelegramLogger
-from datetime import datetime
-import base64
+from dotenv import load_dotenv
+from telethon.sessions import StringSession
+
+app = Flask(__name__)
 
 load_dotenv()
 
@@ -142,9 +146,46 @@ async def handler(event):
         logger.sendMessageLog(f"Message Dropped time diff {time_diff}")
 
 
-async def main():
-    logger.sendMessageLog("Listening for new messages...")
-    await client.start()
-    await client.run_until_disconnected()
+@app.route('/', methods=['GET'])
+def home():
+    return jsonify({"status": "Hello"})
 
-client.loop.run_until_complete(main())
+@app.route('/start-bot', methods=['GET'])
+def start_bot():
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+
+    async def bot_listener():
+        @client.on(events.NewMessage(chats='signalsolanaby4am'))
+        async def handler(event):
+            message_text = event.message.message
+            message_time = event.message.date 
+            current_time = datetime.now()
+            time_diff = current_time.timestamp() - message_time.timestamp()
+            
+            logger.sendMessageLog(f"New Message Received ${message_time}")
+
+            if time_diff <= 30:
+                selected_token = extract_address(message_text)
+                if selected_token:
+                    print(f"New token detected: {selected_token}")
+                    process_token(selected_token)
+            else:
+                logger.sendMessageLog(f"Message Dropped time diff {time_diff}")
+
+        await client.start()
+        logger.sendMessageLog("Listening for new messages...")
+        await client.run_until_disconnected()
+
+    # Run the bot listener in the background
+    def run_in_background():
+        loop.run_until_complete(bot_listener())
+
+    import threading
+    bot_thread = threading.Thread(target=run_in_background, daemon=True)
+    bot_thread.start()
+
+    return jsonify({"status": "bot started"})
+
+if __name__ == '__main__':
+    app.run(debug=True)
