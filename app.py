@@ -23,7 +23,10 @@ report_sender = TelegramReport.TelegramReport()
 logger = TelegramLogger.TelegramLogger()
 checker = PriceChecker.PriceChecker()
 
-client = TelegramClient('session_name', api_id, api_hash, proxy=None)
+session_path = '/tmp/session_name'
+os.makedirs(os.path.dirname(session_path), exist_ok=True)
+
+client = TelegramClient(session_path, api_id, api_hash, proxy=None)
 ADDRESS_REGEX = re.compile(r'\b[A-HJ-NP-Za-km-z1-9]{43,44}\b')
 
 initial_investment = float(os.getenv("SOLANA_AMOUNT", "0"))
