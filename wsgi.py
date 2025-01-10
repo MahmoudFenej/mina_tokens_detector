@@ -15,7 +15,10 @@ api_hash = 'db202faf086c8e0ad4f155b6e4c2eaf5'
 report_sender = TelegramReport.TelegramReport()
 logger = TelegramLogger.TelegramLogger()
 
-client = TelegramClient('session_name', api_id, api_hash, proxy=None)
+session_path = '/tmp/session_name'
+os.makedirs(os.path.dirname(session_path), exist_ok=True)
+
+client = TelegramClient(session_path, api_id, api_hash, proxy=None)
 checker = PriceChecker.PriceChecker()
 
 print(os.getenv("SOLANA_AMOUNT"))
