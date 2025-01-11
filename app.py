@@ -1,13 +1,17 @@
-import re
-import time
+from flask import Flask, request, jsonify
 from telethon import TelegramClient, events
+import asyncio
+import re
+import os
+import time
+from datetime import datetime
 import TelegramReport
 import PriceChecker
-from dotenv import load_dotenv
-import os
 import TelegramLogger
-from datetime import datetime
+from dotenv import load_dotenv
 from telethon.sessions import StringSession
+
+app = Flask(__name__)
 
 load_dotenv()
 
@@ -16,9 +20,11 @@ api_hash = 'db202faf086c8e0ad4f155b6e4c2eaf5'
 report_sender = TelegramReport.TelegramReport()
 logger = TelegramLogger.TelegramLogger()
 
+
 session_string = '1BJWap1wBu3fJnP1xmcgIK2ZjnEvpTqhWeVtvBD4NU4H7UN7zRrC373q9qVR2Jr4P4Lzw10VStbuLTzApQGLMSzYexNRDAH2se_t7QK6EoTCJJMSv8-GKs0lZBWQGnADX6dO7i7TmbKd-Wejn-Jf3PoonsM8GWgDeCp91YUqE0k_xHG89-_VjZ0nr6kpvH91NjDu8N24BYuvZuPfLdq4O2f0mDTmbyvSACNPxF0ASvjVB02G7Q6Z9VZQKgiCNERa3iWEn9aFXsdI6vOV_LTDR4Hj44P0bIHKDVl_jFYTRM-Fh508hb8htrACocXaQ0HPc83jr5DPxR_AeRr_9iVKlm7BNP-W4Hns='
 
 client = TelegramClient(StringSession(session_string), api_id, api_hash)
+
 checker = PriceChecker.PriceChecker()
 
 print(os.getenv("SOLANA_AMOUNT"))
@@ -139,9 +145,47 @@ async def handler(event):
         logger.sendMessageLog(f"Message Dropped time diff {time_diff}")
 
 
-async def main():
-    logger.sendMessageLog("Listening for new messages...")
-    await client.start()
-    await client.run_until_disconnected()
+@client.on(events.NewMessage(chats='signalsolanaby4am'))
+async def handler(event):
+    global is_processing
+    message_text = event.message.message
+    message_time = event.message.date 
+    current_time = datetime.now()
+    time_diff = current_time.timestamp() - message_time.timestamp()
+    
+    logger.sendMessageLog(f"New Message Received ${message_time}")
 
-client.loop.run_until_complete(main())
+    if time_diff <= 30:
+        selected_token = extract_address(message_text)
+        if selected_token:
+            print(f"New token detected: {selected_token}")
+            process_token(selected_token)
+    else:
+        logger.sendMessageLog(f"Message Dropped time diff {time_diff}")
+        
+@app.route('/', methods=['GET'])
+def home():
+    return jsonify({"status": "Hello"})
+
+@app.route('/start-bot', methods=['GET'])
+def start_bot():
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+
+    async def bot_listener():
+        await client.start()
+        logger.sendMessageLog("Listening for new messages...")
+        await client.run_until_disconnected()
+
+    # Run the bot listener in the background
+    def run_in_background():
+        loop.run_until_complete(bot_listener())
+
+    import threading
+    bot_thread = threading.Thread(target=run_in_background, daemon=True)
+    bot_thread.start()
+
+    return jsonify({"status": "bot started"})
+
+if __name__ == '__main__':
+    app.run(debug=True)
