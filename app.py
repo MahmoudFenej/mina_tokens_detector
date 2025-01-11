@@ -39,7 +39,7 @@ def extract_address(message_text):
         return match.group(0)
     return None
 
-def process_token(selected_token):
+async def process_token(selected_token):
     global total_profit
     try:
         processed_symbols = []
@@ -100,10 +100,10 @@ def process_token(selected_token):
 
         logger.sendMessageLog(f"{selected_token} swapped successfully")
         buyerManager = BuyerManager.BuyerManager(selected_token)
-        buyerManager.perform_swap()
+        await buyerManager.perform_swap()
 
         start_time = time.time()
-        profit = checker.track_price_change(selected_token, initial_investment)
+        profit = await checker.track_price_change(selected_token, initial_investment)
         total_profit += (profit - fee_per_transaction)  # Update total profit
         processed_symbols.append({
             'tokenSymbol': selected_token,
@@ -135,7 +135,7 @@ async def handler(event):
         selected_token = extract_address(message_text)
         if selected_token:
             print(f"New token detected: {selected_token}")
-            process_token(selected_token)
+            await process_token(selected_token)
     else:
         logger.sendMessageLog(f"Message Dropped time diff {time_diff}")
 

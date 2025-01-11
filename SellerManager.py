@@ -17,16 +17,10 @@ class SellerManager:
         self.priority_fee = os.getenv("PRIORITY_FEE")
         self.priority_level = os.getenv("PRIORITY_LEVEL")
 
-    async def _perform_swap_async(self):
+    async def perform_swap(self):
         to_token = "So11111111111111111111111111111111111111112"
-        await self.swapper.swap(self.from_token, to_token, "auto", self.slippage, self.priority_fee, self.priority_level)
-
-    def perform_swap(self):
-        try:
-            if asyncio.get_event_loop().is_running():
-                asyncio.create_task(self._perform_swap_async())
-            else:
-                asyncio.run(self._perform_swap_async())
+        try: 
+            await self.swapper.swap(self.from_token, to_token, "auto", self.slippage, self.priority_fee, self.priority_level)
         except Exception as e:
             print(f"Error occurred during swap: {e}")
         finally:

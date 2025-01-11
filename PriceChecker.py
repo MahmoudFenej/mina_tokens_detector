@@ -42,7 +42,7 @@ class PriceChecker:
             print(f"Error parsing response: {e}")
             return None
 
-    def sell(self, current_price: float, initial_investment: float, initial_price: float, detected_token) -> None:
+    async def sell(self, current_price: float, initial_investment: float, initial_price: float, detected_token) -> None:
         coins_bought = initial_investment / initial_price
         current_value = coins_bought * current_price
         profit = current_value - initial_investment
@@ -55,11 +55,11 @@ class PriceChecker:
         print(f"Current value: {current_value:.2f}, Profit: {profit:.2f}")
 
         sellerManager = SellerManager.SellerManager(detected_token)
-        sellerManager.perform_swap()
+        await sellerManager.perform_swap()
         return profit
 
   
-    def track_price_change(self, mint_address: str, initial_investment) -> None:
+    async def track_price_change(self, mint_address: str, initial_investment) -> None:
         initial_price = self.fetch_price(mint_address)
 
         if initial_price is None:
@@ -99,20 +99,20 @@ class PriceChecker:
 
             if unchanged_count >= 7:
                 print("Percentage change from last price has remained the same for 5 iterations. Triggering sell.")
-                profit = self.sell(current_price, initial_investment, initial_price, mint_address)
+                profit = await self.sell(current_price, initial_investment, initial_price, mint_address)
                 sell_triggered = True
                 return profit
 
             cumulative_percentage += percentage_change_from_last
 
             if percentage_change_from_initial >= self.increase_ratio:
-                profit = self.sell(current_price, initial_investment, initial_price, mint_address)
+                profit = await self.sell(current_price, initial_investment, initial_price, mint_address)
                 sell_triggered = True
                 return profit
 
             if abs(percentage_change_from_initial) >= self.decrease_ratio or cumulative_percentage >= self.decrease_ratio:
                 print(f"Cumulative decrease of {cumulative_percentage:.2f}% detected! Triggering sell.")
-                profit = self.sell(current_price, initial_investment, initial_price, mint_address)
+                profit = await self.sell(current_price, initial_investment, initial_price, mint_address)
                 sell_triggered = True
                 return profit
 
