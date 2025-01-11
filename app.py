@@ -56,47 +56,22 @@ async def process_token(selected_token):
             print("Could not fetch the initial price.")
             return
 
-        last_price = initial_price
-        cumulative_percentage = 0.0
-        unchanged_count = 0
-        last_percentage_change = None
+        consistent_increase = False
+        for i in range(2):
+            if i == 1:
+                time.sleep(2)
+                current_price = checker.fetch_price(selected_token)
+                price_increase_percentage = ((current_price - initial_price) / initial_price) * 100
+                logger.sendMessageLog(f"Initial Price for {selected_token}: {initial_price}")
+                if price_increase_percentage >= 0.5:
+                    initial_price = current_price
+                    consistent_increase = True
+                else:
+                    consistent_increase = False
+                    logger.sendMessageLog(f"Price did not increase consistently for {selected_token}. Skipping...")
 
-        while True:
-            time.sleep(1)
-            current_price = checker.fetch_price(selected_token)
-
-            if current_price is None:
-                print("Failed to fetch the current price. Skipping this iteration.")
-                continue
-
-            percentage_change_from_initial = ((current_price - initial_price) / initial_price) * 100
-            percentage_change_from_last = ((current_price - last_price) / last_price) * 100
-
-            print(f"Percentage change from initial: {percentage_change_from_initial:.2f}%")
-            print(f"Percentage change from last price: {percentage_change_from_last:.2f}%")
-
-            if last_percentage_change is not None and percentage_change_from_last == last_percentage_change:
-                unchanged_count += 1
-            else:
-                unchanged_count = 0
-
-            last_percentage_change = percentage_change_from_last
-
-            if unchanged_count >= 7:
-                logger.sendMessageLog("Unchanged for 7 seconds")
-                return
-
-            cumulative_percentage += percentage_change_from_last
-
-            if percentage_change_from_last >= 1:
-                logger.sendMessageLog("Buying token...")
-                break
-
-            if abs(percentage_change_from_initial) >= 60 or cumulative_percentage >= 60:
-                logger.sendMessageLog("Significant price drop detected.")
-                return
-
-            last_price = current_price
+        if not consistent_increase:
+            return
 
         logger.sendMessageLog(f"{selected_token} swapped successfully")
         buyerManager = BuyerManager.BuyerManager(selected_token)
