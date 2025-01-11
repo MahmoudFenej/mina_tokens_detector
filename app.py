@@ -8,6 +8,7 @@ import os
 import TelegramLogger
 from datetime import datetime
 from telethon.sessions import StringSession
+import BuyerManager
 
 load_dotenv()
 
@@ -98,8 +99,8 @@ def process_token(selected_token):
             last_price = current_price
 
         logger.sendMessageLog(f"{selected_token} swapped successfully")
-        # buyerManager = BuyerManager.BuyerManager(selected_token)
-        # buyerManager.perform_swap()
+        buyerManager = BuyerManager.BuyerManager(selected_token)
+        buyerManager.perform_swap()
 
         start_time = time.time()
         profit = checker.track_price_change(selected_token, initial_investment)
