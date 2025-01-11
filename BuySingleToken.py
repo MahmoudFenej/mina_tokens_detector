@@ -27,9 +27,6 @@ async def main():
     buyerManager = BuyerManager.BuyerManager(detected_token)
     await buyerManager.perform_swap()
 
-    time.sleep(20)
-
-    sellManager = SellerManager.SellerManager(detected_token)
-    await sellManager.perform_swap()
+    
 
 client.loop.run_until_complete(main())

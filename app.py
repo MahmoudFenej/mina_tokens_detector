@@ -74,8 +74,8 @@ async def process_token(selected_token):
             return
 
         logger.sendMessageLog(f"{selected_token} swapped successfully")
-        buyerManager = BuyerManager.BuyerManager(selected_token)
-        await buyerManager.perform_swap()
+        # buyerManager = BuyerManager.BuyerManager(selected_token)
+        # await buyerManager.perform_swap()
 
         start_time = time.time()
         profit = await checker.track_price_change(selected_token, initial_investment)
