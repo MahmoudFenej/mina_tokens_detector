@@ -92,7 +92,7 @@ class SolanaTracker:
             "fromAmount": str(from_amount),
             "slippage": str(slippage),
             "payer": payer,
-            "priorityFee":0.0001,
+            "priorityFee":0.00005,
             "forceLegacy": str(force_legacy).lower(),
         }
         
