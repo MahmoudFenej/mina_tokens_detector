@@ -9,6 +9,7 @@ import TelegramLogger
 from datetime import datetime
 from telethon.sessions import StringSession
 import BuyerManager
+import TrendChecker
 
 load_dotenv()
 
@@ -56,47 +57,25 @@ def process_token(selected_token):
             print("Could not fetch the initial price.")
             return
 
-        last_price = initial_price
-        cumulative_percentage = 0.0
-        unchanged_count = 0
-        last_percentage_change = None
+    
+        is_inecreasing = False
 
-        while True:
-            time.sleep(1)
-            current_price = checker.fetch_price(selected_token)
+        for i in range(2):
+            if i == 1:
+               time.sleep(2)
 
-            if current_price is None:
-                print("Failed to fetch the current price. Skipping this iteration.")
-                continue
+            trendChecker = TrendChecker.TrendChecker(selected_token)
+            trend = trendChecker.check_trend()
 
-            percentage_change_from_initial = ((current_price - initial_price) / initial_price) * 100
-            percentage_change_from_last = ((current_price - last_price) / last_price) * 100
-
-            print(f"Percentage change from initial: {percentage_change_from_initial:.2f}%")
-            print(f"Percentage change from last price: {percentage_change_from_last:.2f}%")
-
-            if last_percentage_change is not None and percentage_change_from_last == last_percentage_change:
-                unchanged_count += 1
+            if(not trend['is_increasing']):
+                logger.sendMessageLog(f"Trend Decreasing {selected_token}. Skipping...")
+                is_inecreasing = False
             else:
-                unchanged_count = 0
+                is_inecreasing = True
 
-            last_percentage_change = percentage_change_from_last
-
-            if unchanged_count >= 7:
-                logger.sendMessageLog("Unchanged for 7 seconds")
-                return
-
-            cumulative_percentage += percentage_change_from_last
-
-            if percentage_change_from_last >= 1:
-                logger.sendMessageLog("Buying token...")
-                break
-
-            if abs(percentage_change_from_initial) >= 60 or cumulative_percentage >= 60:
-                logger.sendMessageLog("Significant price drop detected.")
-                return
-
-            last_price = current_price
+        if (not is_inecreasing):
+            logger.sendMessageLog(f"Token Droped Decreasing {selected_token}")
+            return
 
         logger.sendMessageLog(f"{selected_token} swapped successfully")
         buyerManager = BuyerManager.BuyerManager(selected_token)
@@ -131,7 +110,7 @@ async def handler(event):
     
     logger.sendMessageLog(f"New Message Received ${message_time}")
 
-    if time_diff <= 30:
+    if time_diff <= 35:
         selected_token = extract_address(message_text)
         if selected_token:
             print(f"New token detected: {selected_token}")
