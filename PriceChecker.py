@@ -54,8 +54,8 @@ class PriceChecker:
         print(f"Initial investment: {initial_investment}, Coins bought: {coins_bought:.6f}")
         print(f"Current value: {current_value:.2f}, Profit: {profit:.2f}")
 
-        # sellerManager = SellerManager.SellerManager(detected_token)
-        # await sellerManager.perform_swap()
+        sellerManager = SellerManager.SellerManager(detected_token)
+        await sellerManager.perform_swap()
         return profit
 
   

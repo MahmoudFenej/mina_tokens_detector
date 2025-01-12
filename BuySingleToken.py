@@ -22,10 +22,29 @@ session_string = '1BJWap1wBu3fJnP1xmcgIK2ZjnEvpTqhWeVtvBD4NU4H7UN7zRrC373q9qVR2J
 client = TelegramClient(StringSession(session_string), api_id, api_hash)
 
 async def main():
-    detected_token = "HREdVBmGvUvdgvoGeHwYpEQNJRb1oqmScwV5z1dHpump"
-    
-    buyerManager = BuyerManager.BuyerManager(detected_token)
+    selected_token = "EkYEVGrEc6JrXFfcULE5QvTqpyjnX3Hk4VPjQGQMpump"
+    processed_symbols = []
+    buyerManager = BuyerManager.BuyerManager(selected_token)
     await buyerManager.perform_swap()
+    
+    checker = PriceChecker.PriceChecker()
+    
+    initial_investment = checker.fetch_price("So11111111111111111111111111111111111111112") * float(os.getenv("SOLANA_AMOUNT"))
+
+    start_time = time.time()
+    profit = await checker.track_price_change(selected_token, initial_investment)
+    total_profit += (profit - 0.4)  
+    processed_symbols.append({
+        'tokenSymbol': selected_token,
+        'profit': profit - 0.4
+    })
+    end_time = time.time()
+    elapsed_minutes = (end_time - start_time) / 60
+    total_time_minutes += elapsed_minutes
+
+    print(f"Profit for {selected_token}: {profit}")
+
+
 
     
 
