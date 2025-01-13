@@ -96,7 +96,7 @@ async def process_token(selected_token):
     except Exception as e:
         print(f"Error processing token {selected_token}: {e}")
 
-@client.on(events.NewMessage(chats='signalsolanaby4am'))
+@client.on(events.NewMessage(chats='PumpFunPlays'))
 async def handler(event):
     global is_processing
     message_text = event.message.message
